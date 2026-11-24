@@ -1,0 +1,31 @@
+no,word,pos,meaning,example_en,example_ja,note,related,memo
+1,alleviate,動,（苦痛などを）和らげる,The medicine helped alleviate her headache.,その薬は彼女の頭痛を和らげるのに役立った。,pain / stress / poverty などが目的語,alleviation(名),a + levi(軽い) → 軽くする
+2,scrutiny,名,精査・綿密な調査,The plan came under close scrutiny.,その計画は綿密な精査を受けた。,under scrutiny の形が多い,scrutinize(動),
+3,plausible,形,もっともらしい,He gave a plausible excuse for being late.,彼は遅刻のもっともらしい言い訳をした。,本当かどうかは別、のニュアンス,implausible(反),
+4,inevitable,形,避けられない,Change is inevitable in any organization.,どんな組織でも変化は避けられない。,,inevitably(副),in(否定) + evit(避ける)
+5,reluctant,形,気が進まない,She was reluctant to speak in public.,彼女は人前で話すのに気が進まなかった。,be reluctant to do,reluctance(名),
+6,deteriorate,動,悪化する,His health began to deteriorate last winter.,彼の健康は去年の冬に悪化し始めた。,自動詞が基本,deterioration(名),
+7,meticulous,形,細心の・几帳面な,She keeps meticulous records of her spending.,彼女は支出を几帳面に記録している。,,meticulously(副),
+8,ambiguous,形,あいまいな,The instructions were ambiguous.,その指示はあいまいだった。,,ambiguity(名),ambi(両方) → どちらにも取れる
+9,compensate,動,補う・償う,Hard work can compensate for a lack of talent.,努力は才能の不足を補うことができる。,compensate for A,compensation(名),
+10,substantial,形,相当な・かなりの,They made a substantial profit this year.,彼らは今年かなりの利益を上げた。,,substantially(副),
+11,feasible,形,実行可能な,Is it feasible to finish by Friday?,金曜までに終えるのは実行可能だろうか。,,feasibility(名),
+12,undermine,動,（徐々に）弱める・損なう,Constant criticism can undermine confidence.,絶え間ない批判は自信を損なうことがある。,,,under(下) + mine(掘る) → 土台を掘り崩す
+13,prevail,動,普及している・勝る,This custom still prevails in rural areas.,この習慣は地方でまだ広く見られる。,prevail over A（Aに勝つ）,prevalent(形),
+14,tentative,形,仮の・暫定的な,We made a tentative plan for the trip.,私たちは旅行の仮の計画を立てた。,,tentatively(副),
+15,coherent,形,首尾一貫した,Her argument was clear and coherent.,彼女の主張は明快で一貫していた。,,coherence(名),
+16,obsolete,形,時代遅れの・廃れた,Fax machines are almost obsolete.,ファックスはほとんど時代遅れだ。,,,
+17,diminish,動,減少する・減らす,The pain diminished after a few days.,数日後に痛みは和らいだ。,自他両方,diminution(名),
+18,profound,形,深い・重大な,The book had a profound effect on me.,その本は私に深い影響を与えた。,,profoundly(副),
+19,reconcile,動,和解させる・両立させる,It is hard to reconcile work and family life.,仕事と家庭生活を両立させるのは難しい。,reconcile A with B,reconciliation(名),
+20,vulnerable,形,弱い・傷つきやすい,Young children are vulnerable to infection.,幼い子どもは感染しやすい。,be vulnerable to A,vulnerability(名),
+21,arbitrary,形,恣意的な・任意の,The rules seemed arbitrary to the students.,その規則は学生には恣意的に思えた。,,arbitrarily(副),
+22,consensus,名,（意見の）一致・合意,The team reached a consensus quickly.,チームはすぐに合意に達した。,reach a consensus,,
+23,discrepancy,名,食い違い・不一致,There is a discrepancy between the two reports.,2つの報告書には食い違いがある。,between A and B,,
+24,endorse,動,支持する・承認する,Many experts endorsed the new policy.,多くの専門家が新しい政策を支持した。,,endorsement(名),
+25,hinder,動,妨げる,Bad weather hindered the rescue.,悪天候が救助を妨げた。,hinder A from doing,hindrance(名),
+26,intrinsic,形,本質的な・固有の,Learning has intrinsic value.,学ぶことにはそれ自体に価値がある。,,intrinsically(副),反対は extrinsic
+27,mitigate,動,和らげる・軽減する,Trees can mitigate the effects of heat.,木々は暑さの影響を和らげることができる。,alleviate と似ている,mitigation(名),
+28,notorious,形,悪名高い,The area is notorious for traffic jams.,その地域は渋滞で悪名高い。,be notorious for A,notoriety(名),famous の悪い版
+29,pragmatic,形,実際的な・現実的な,We need a pragmatic solution.,私たちには現実的な解決策が必要だ。,,pragmatism(名),
+30,resilient,形,回復力のある・へこたれない,Children are often more resilient than adults.,子どもは大人より立ち直りが早いことが多い。,,resilience(名),
