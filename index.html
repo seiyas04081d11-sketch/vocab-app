@@ -51,7 +51,20 @@
         <span class="mode-count"><b id="sDue">0</b> 問</span>
       </button>
     </div>
-    <p class="hint" id="doneMsg" hidden>今日の課題はおわりです。明日また出題されます。</p>
+    <p class="hint" id="doneMsg" hidden>今日の課題はおわりです。下の「もっとやる」で続けられます。</p>
+
+    <!-- 課題のあとも何回でも -->
+    <div class="more" id="moreBox">
+      <p class="label">もっとやる（何回でもOK）</p>
+      <div class="chips">
+        <button class="chip" id="moreLearn">＋10語 覚える</button>
+        <button class="chip" id="reLearn">今日の単語を見直す <b id="cToday">0</b></button>
+        <button class="chip" id="prWeak">苦手を演習 <b id="cWeak">0</b></button>
+        <button class="chip" id="prToday">今日の単語を演習 <b id="cToday2">0</b></button>
+        <button class="chip" id="prRandom">ランダム演習 10問</button>
+      </div>
+      <p class="hint small-hint">「もっとやる」の演習は練習です。間違えた単語だけ、すぐ復習に回ります。</p>
+    </div>
 
     <div class="stats">
       <div class="stat"><span id="sLearned">0</span><small>覚えた</small></div>
@@ -82,7 +95,7 @@
     <div class="progressbar"><div id="lProgBar"></div></div>
     <div class="progress" id="lProg"></div>
     <div id="lCard" class="card">
-      <div class="meta"><span id="lNo"></span><span class="tag">覚える</span></div>
+      <div class="meta"><span id="lNo"></span><span class="tag" id="lTag">覚える</span></div>
       <div class="word" id="lWord"></div>
       <div class="cue" id="lCue"></div>
       <div class="pos" id="lPos"></div>

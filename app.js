@@ -6,6 +6,8 @@ const KEY_INTRO = 'vocab.intro';    // 日付 -> その日に覚えた新しい�
 const KEY_DAYS = 'vocab.days';      // 日付 -> { learned, reviewed, done }（連続達成用）
 const KEY_BEST = 'vocab.best';      // 最高連続日数
 const KEY_MYMEMO = 'vocab.mymemo';  // no -> 自分で書いた覚え方（CSVを読み直しても消えない）
+const KEY_EXTRA = 'vocab.extra';    // 日付 -> 「＋10語 覚える」で増やした数
+const MORE_SIZE = 10;               // 「もっとやる」1回の語数・問題数
 
 const FAST_MS = 1500;      // これより速く「わかる」を押したら OK にしない
 const RETRY_GAP = 4;       // 「だめ」の単語は何枚後にもう一度出すか
@@ -20,6 +22,8 @@ let queue = [];      // 今回のセッションで出す単語
 let idx = 0;
 let card = null;     // 演習中のカードの状態 { w, shownAt, hints, decidedAt }
 let tally = [0, 0, 0];
+let practice = false;   // true: 「もっとやる」の演習（予定は変えない。間違えたものだけ復習に回す）
+let reviewing = false;  // true: 覚えた単語の見直し
 
 function load(k, fallback) {
   try { return JSON.parse(localStorage.getItem(k)) ?? fallback; } catch { return fallback; }
@@ -72,9 +76,17 @@ function dueWords() {
   const now = Date.now();
   return words.filter(w => srs[w.no] && srs[w.no].due <= now);
 }
+function extraToday() { return load(KEY_EXTRA, {})[todayKey()] || 0; }
 function newWords() {
-  const left = Math.max(0, newLimit() - introducedToday());
+  const left = Math.max(0, newLimit() + extraToday() - introducedToday());
   return words.filter(w => !srs[w.no]).slice(0, left);
+}
+function unlearned() { return words.filter(w => !srs[w.no]); }
+function learnedToday() { return words.filter(w => srs[w.no]?.learnedOn === todayKey()); }
+// 苦手: 一度でも「だめ」になった、または間隔が1日以下（覚えたて・あやしい）
+function weakWords() {
+  return words.filter(w => srs[w.no] && (srs[w.no].lapses > 0 || srs[w.no].iv <= 1))
+              .sort((a, b) => srs[b.no].lapses - srs[a.no].lapses);
 }
 
 // ---- 連続達成 ----
@@ -127,6 +139,17 @@ function refreshHome() {
   $('startBtn').classList.toggle('empty', due === 0);
   $('doneMsg').hidden = due + nw > 0;
 
+  // もっとやる
+  const today = learnedToday().length, weak = weakWords().length, learned = words.filter(w => srs[w.no]).length;
+  $('moreLearn').hidden = nw > 0 || unlearned().length === 0;   // 今日の分が残っている間は出さない
+  $('reLearn').hidden = today === 0;
+  $('prToday').hidden = today === 0;
+  $('prWeak').hidden = weak === 0;
+  $('prRandom').hidden = learned === 0;
+  $('cToday').textContent = $('cToday2').textContent = today;
+  $('cWeak').textContent = weak;
+  $('moreBox').hidden = [...$('moreBox').querySelectorAll('.chip')].every(b => b.hidden);
+
   const st = streakInfo();
   $('streakNum').textContent = st.n;
   $('bestNum').textContent = st.best;
@@ -162,10 +185,14 @@ function setText(id, text) { $(id).textContent = text || ''; $(id).hidden = !tex
 
 // ================= STEP 1: 覚える =================
 // 答えを全部見せて覚える。「覚えた」を押した単語から演習に回る。
-function startLearn() {
-  queue = newWords();
+// list を渡すと、覚えた単語の見直し（予定は変えない）
+function startLearn(list) {
+  reviewing = !!list;
+  queue = list ? [...list] : newWords();
   if (!queue.length) return;
   idx = 0;
+  $('lGot').textContent = reviewing ? '次へ' : '覚えた';
+  $('lTag').textContent = reviewing ? '見直し' : '覚える';
   show('learn');
   showLearnCard();
 }
@@ -218,7 +245,7 @@ function learnAgain() {
 function learnGot() {
   const w = queue[idx];
   if (!srs[w.no]) {
-    srs[w.no] = { iv: 0, due: Date.now(), reps: 0, lapses: 0 };   // すぐ演習に出る
+    srs[w.no] = { iv: 0, due: Date.now(), reps: 0, lapses: 0, learnedOn: todayKey() };   // すぐ演習に出る
     save(KEY_SRS, srs);
     const m = load(KEY_INTRO, {});
     m[todayKey()] = (m[todayKey()] || 0) + 1;
@@ -239,7 +266,7 @@ function nextLearn() {
 
 function finishLearn() {
   const learned = new Set(queue.map(w => w.no)).size;
-  $('rTitle').textContent = `${learned}語を覚えました`;
+  $('rTitle').textContent = reviewing ? `${learned}語を見直しました` : `${learned}語を覚えました`;
   $('rStats').hidden = true;
   showStreakResult(checkTodayDone());
   const due = dueWords().length;
@@ -249,8 +276,10 @@ function finishLearn() {
 }
 
 // ================= STEP 2: 演習 =================
-function startStudy() {
-  queue = shuffle(dueWords());
+// list を渡すと「もっとやる」の練習（予定は変えず、間違えたものだけ復習に回す）
+function startStudy(list) {
+  practice = Array.isArray(list);
+  queue = practice ? shuffle([...list]).slice(0, MORE_SIZE) : shuffle(dueWords());
   if (!queue.length) return;
   idx = 0; tally = [0, 0, 0];
   show('study');
@@ -261,7 +290,7 @@ function showCard() {
   const w = queue[idx];
   card = { w, shownAt: Date.now(), hints: 0 };
   $('cNo').textContent = 'No.' + w.no;
-  $('cTag').textContent = srs[w.no] && srs[w.no].reps > 0 ? '復習' : '初めての演習';
+  $('cTag').textContent = practice ? '練習' : srs[w.no] && srs[w.no].reps > 0 ? '復習' : '初めての演習';
   $('cWord').textContent = w.word;
   // 多品詞・多義語は表面に品詞とフレーズを出して、どの意味を答えるか分かるようにする
   setText('cCue', w.cue ? `〈${w.pos}〉 ${w.cue}` : '');
@@ -343,12 +372,15 @@ function record(g, reason) {
     when = 'このあともう一度';
     // 数枚後にもう一度出す
     queue.splice(Math.min(idx + 1 + RETRY_GAP, queue.length), 0, w);
+  } else if (practice) {
+    // 練習で思い出せたものは、もともとの予定のまま
+    when = '予定はそのまま';
   } else {
     s.iv = g === 1 ? Math.max(1, Math.round(s.iv * 1.2)) : (s.iv < 1 ? 3 : Math.round(s.iv * 2.5));
     s.due = startOfToday() + s.iv * DAY;
     when = `${s.iv}日後`;
   }
-  s.reps++;
+  if (!practice || g === 0) s.reps++;
   srs[w.no] = s;
   save(KEY_SRS, srs);
   markActivity('reviewed');
@@ -363,7 +395,7 @@ function next() {
 }
 
 function finishStudy() {
-  $('rTitle').textContent = 'おつかれさまでした';
+  $('rTitle').textContent = practice ? '練習おわり' : 'おつかれさまでした';
   $('rStats').hidden = false;
   $('rNg').textContent = tally[0];
   $('rMid').textContent = tally[1];
@@ -425,11 +457,21 @@ async function init() {
   show('home');
 
   const goHome = () => { refreshHome(); show('home'); };
-  $('learnBtn').onclick = startLearn;
-  $('startBtn').onclick = startStudy;
+  $('learnBtn').onclick = () => startLearn();
+  $('startBtn').onclick = () => startStudy();
+  $('moreLearn').onclick = () => {
+    const m = load(KEY_EXTRA, {});
+    m[todayKey()] = (m[todayKey()] || 0) + MORE_SIZE;
+    save(KEY_EXTRA, m);
+    startLearn();
+  };
+  $('reLearn').onclick = () => startLearn(learnedToday());
+  $('prWeak').onclick = () => startStudy(weakWords().slice(0, MORE_SIZE));
+  $('prToday').onclick = () => startStudy(learnedToday());
+  $('prRandom').onclick = () => startStudy(words.filter(w => srs[w.no]));
   $('back').onclick = () => { if (!$('learn').hidden && !$('lMemoInput').hidden) toggleMemoEdit(); goHome(); };
   $('toHome').onclick = goHome;
-  $('rNext').onclick = startStudy;
+  $('rNext').onclick = () => startStudy();
   $('lAgain').onclick = learnAgain;
   $('lGot').onclick = learnGot;
   $('lMemoBtn').onclick = toggleMemoEdit;

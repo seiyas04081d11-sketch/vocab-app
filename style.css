@@ -199,3 +199,11 @@ input[type=number] {
 .celebrate { background:var(--soft); border:1px solid var(--accent); border-radius:16px; padding:14px; margin:0 0 14px; text-align:center; }
 .celebrate b { display:block; font-family:var(--f-word); font-size:26px; color:var(--accent); }
 .celebrate span { font-size:13px; }
+
+/* ---- もっとやる ---- */
+.more { margin:14px 0 0; }
+.more .label { margin:0 0 6px; }
+.chips { display:flex; flex-wrap:wrap; gap:8px; }
+.chip { width:auto; margin:0; padding:9px 14px; border-radius:999px; font-size:14px; }
+.chip b { font-family:var(--f-word); color:var(--accent); margin-left:4px; }
+.small-hint { font-size:11px; margin:8px 0 0; text-align:left; }
