@@ -1,5 +1,5 @@
-const CACHE = 'vocab-v4';
-const FILES = ['./', './index.html', './style.css', './app.js', './manifest.json', './data/sample.csv'];
+const CACHE = 'vocab-v6';
+const FILES = ['./', './index.html', './theme.js', './style.css', './app.js', './manifest.json', './data/sample.csv'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES)));

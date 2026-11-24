@@ -4,34 +4,112 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="単語帳">
-<meta name="theme-color" content="#1f3a5f">
+<meta name="theme-color" content="#0f1420">
 <link rel="manifest" href="manifest.json">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<script src="theme.js"></script>
 <link rel="stylesheet" href="style.css">
 <title>英単語帳</title>
 </head>
 <body>
-<header><h1 id="title">英単語帳</h1><button id="back" hidden>←</button></header>
+<header>
+  <button id="back" class="icon" hidden aria-label="ホームへ戻る">←</button>
+  <h1 id="title">英単語帳</h1>
+</header>
 <main>
   <section id="home">
-    <div class="stats">
-      <div><span id="sDue">0</span><small>今日の復習</small></div>
-      <div><span id="sNew">0</span><small>新しい単語</small></div>
-      <div><span id="sAll">0</span><small>全単語</small></div>
+    <!-- 連続達成 -->
+    <div class="streak" id="streakBox">
+      <div class="streak-top">
+        <div>
+          <p class="eyebrow">STREAK</p>
+          <p class="streak-num"><span id="streakNum">0</span><small>日連続</small></p>
+        </div>
+        <div class="streak-side">
+          <p id="todayState" class="today-state">今日の課題 まだ</p>
+          <p class="best">最高 <span id="bestNum">0</span>日</p>
+        </div>
+      </div>
+      <div class="week" id="week"></div>
     </div>
-    <button class="primary" id="startBtn">学習を始める</button>
-    <p class="hint" id="doneMsg" hidden>今日の分はおわりです。明日また出題されます。</p>
-    <label class="row small">1日の新しい単語 <input id="newLimit" type="number" min="0" max="200"> 語</label>
-    <hr>
-    <label class="file">単語リスト(CSV)を読み込む<input id="csv" type="file" accept=".csv,text/csv"></label>
-    <button id="reset">サンプルに戻す</button>
-    <button id="clearProgress">学習記録をリセット</button>
-    <p class="hint">CSVの列: no, word, pos, meaning, cue, example_en, example_ja, note, related, memo, ja_note</p>
+
+    <!-- 2つのパート -->
+    <div class="modes">
+      <button class="mode" id="learnBtn">
+        <span class="mode-step">STEP 1</span>
+        <span class="mode-name">覚える</span>
+        <span class="mode-desc">新しい単語を答えを見ながら覚える</span>
+        <span class="mode-count"><b id="sNew">0</b> 語</span>
+      </button>
+      <button class="mode" id="startBtn">
+        <span class="mode-step">STEP 2</span>
+        <span class="mode-name">演習</span>
+        <span class="mode-desc">覚えた単語を答えを見ずに思い出す</span>
+        <span class="mode-count"><b id="sDue">0</b> 問</span>
+      </button>
+    </div>
+    <p class="hint" id="doneMsg" hidden>今日の課題はおわりです。明日また出題されます。</p>
+
+    <div class="stats">
+      <div class="stat"><span id="sLearned">0</span><small>覚えた</small></div>
+      <div class="stat"><span id="sStable">0</span><small>定着（1週間以上）</small></div>
+      <div class="stat"><span id="sAll">0</span><small>全単語</small></div>
+    </div>
+
+    <details class="panel" id="lookPanel">
+      <summary>見た目</summary>
+      <p class="label">カラー</p>
+      <div class="swatches" id="themeList"></div>
+      <p class="label">フォント</p>
+      <div class="segs" id="fontList"></div>
+    </details>
+
+    <details class="panel">
+      <summary>設定・データ</summary>
+      <label class="row small">1日に覚える新しい単語 <input id="newLimit" type="number" min="0" max="200"> 語</label>
+      <label class="file">単語リスト(CSV)を読み込む<input id="csv" type="file" accept=".csv,text/csv"></label>
+      <button id="reset">サンプルに戻す</button>
+      <button id="clearProgress" class="danger">学習記録をリセット</button>
+      <p class="hint">CSVの列: no, word, pos, meaning, cue, example_en, example_ja, note, related, memo, ja_note</p>
+    </details>
   </section>
 
+  <!-- STEP 1: 覚える -->
+  <section id="learn" hidden>
+    <div class="progressbar"><div id="lProgBar"></div></div>
+    <div class="progress" id="lProg"></div>
+    <div id="lCard" class="card">
+      <div class="meta"><span id="lNo"></span><span class="tag">覚える</span></div>
+      <div class="word" id="lWord"></div>
+      <div class="cue" id="lCue"></div>
+      <div class="pos" id="lPos"></div>
+      <div class="meaning" id="lMeaning"></div>
+      <div class="janote" id="lJaNote"></div>
+      <div class="ex" id="lEn"></div>
+      <div class="ex ja" id="lJa"></div>
+      <div class="note" id="lNote"></div>
+      <div class="memo" id="lMemo"></div>
+      <div class="mymemo">
+        <div id="lMyMemo" class="mymemo-text"></div>
+        <textarea id="lMemoInput" rows="2" placeholder="自分の語呂・連想・どこで出会ったか（例: 模試の長文で出た）" hidden></textarea>
+        <button id="lMemoBtn" class="ghost small-btn">✎ 自分の覚え方を書く</button>
+      </div>
+      <div class="others" id="lOthers"></div>
+    </div>
+    <div class="row">
+      <button id="lAgain">もう一回見る</button>
+      <button id="lGot" class="primary">覚えた</button>
+    </div>
+  </section>
+
+  <!-- STEP 2: 演習 -->
   <section id="study" hidden>
+    <div class="progressbar"><div id="progBar"></div></div>
     <div class="progress" id="prog"></div>
-    <div id="card">
+    <div id="card" class="card">
       <div class="meta"><span id="cNo"></span><span id="cTag" class="tag"></span></div>
       <div class="word" id="cWord"></div>
       <div class="cue" id="cCue"></div>
@@ -52,7 +130,7 @@
     </div>
 
     <div id="phaseAsk">
-      <button id="hintBtn">ヒント</button>
+      <button id="hintBtn" class="ghost">ヒント</button>
       <div class="row">
         <button id="dunno" class="ng">わからない</button>
         <button id="know" class="primary">わかる</button>
@@ -73,13 +151,17 @@
   </section>
 
   <section id="result" hidden>
-    <h2>おつかれさまでした</h2>
-    <div class="stats">
-      <div><span id="rNg">0</span><small>だめ</small></div>
-      <div><span id="rMid">0</span><small>あやしい</small></div>
-      <div><span id="rOk">0</span><small>OK</small></div>
+    <p class="eyebrow">DONE</p>
+    <h2 id="rTitle">おつかれさまでした</h2>
+    <div class="celebrate" id="rStreak" hidden></div>
+    <div class="stats" id="rStats">
+      <div class="stat"><span id="rNg" class="c-ng">0</span><small>だめ</small></div>
+      <div class="stat"><span id="rMid">0</span><small>あやしい</small></div>
+      <div class="stat"><span id="rOk" class="c-ok">0</span><small>OK</small></div>
     </div>
-    <button class="primary" id="toHome">ホームへ</button>
+    <p class="hint" id="rMsg"></p>
+    <button class="primary big" id="rNext" hidden>演習に進む</button>
+    <button id="toHome">ホームへ</button>
   </section>
 </main>
 <script src="app.js"></script>
