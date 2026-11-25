@@ -121,6 +121,7 @@ function streakInfo() {
 }
 
 function show(id) {
+  stopSpeak();
   for (const s of ['home', 'learn', 'study', 'result']) $(s).hidden = s !== id;
   $('back').hidden = id === 'home';
   $('title').textContent = { home: '英単語帳', learn: '覚える', study: '演習', result: '結果' }[id];
@@ -183,6 +184,35 @@ function othersText(w) {
 }
 function setText(id, text) { $(id).textContent = text || ''; $(id).hidden = !text; }
 
+// ================= 読み上げ =================
+// 端末に入っている音声合成（Web Speech API）で英語を読む。通信なし・無料。
+const canSpeak = 'speechSynthesis' in window && 'SpeechSynthesisUtterance' in window;
+let enVoice = null;
+
+function pickVoice() {
+  const vs = speechSynthesis.getVoices().filter(v => /^en[-_]US/i.test(v.lang));
+  enVoice = vs.find(v => /Samantha|Google US English/.test(v.name)) || vs.find(v => v.localService) || vs[0] || null;
+}
+function stopSpeak() {
+  if (!canSpeak) return;
+  speechSynthesis.cancel();
+  document.querySelectorAll('.say.on').forEach(b => b.classList.remove('on'));
+}
+// ボタンの data-say に書いた要素の文字を読む。読んでいる途中でもう一度押すと止まる
+function onSay(btn) {
+  const text = $(btn.dataset.say).textContent.trim();
+  const wasOn = btn.classList.contains('on');
+  stopSpeak();
+  if (!text || wasOn) return;
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = 'en-US';
+  if (enVoice) u.voice = enVoice;
+  u.rate = btn.classList.contains('sm') ? 0.95 : 0.85;   // 単語は少しゆっくり
+  u.onend = u.onerror = () => btn.classList.remove('on');
+  btn.classList.add('on');
+  speechSynthesis.speak(u);
+}
+
 // ================= STEP 1: 覚える =================
 // 答えを全部見せて覚える。「覚えた」を押した単語から演習に回る。
 // list を渡すと、覚えた単語の見直し（予定は変えない）
@@ -198,6 +228,7 @@ function startLearn(list) {
 }
 
 function showLearnCard() {
+  stopSpeak();
   const w = queue[idx];
   $('lNo').textContent = 'No.' + w.no;
   $('lWord').textContent = w.word;
@@ -287,6 +318,7 @@ function startStudy(list) {
 }
 
 function showCard() {
+  stopSpeak();
   const w = queue[idx];
   card = { w, shownAt: Date.now(), hints: 0 };
   $('cNo').textContent = 'No.' + w.no;
@@ -476,6 +508,13 @@ async function init() {
   $('lGot').onclick = learnGot;
   $('lMemoBtn').onclick = toggleMemoEdit;
   $('hintBtn').onclick = useHint;
+  if (canSpeak) {
+    pickVoice();
+    speechSynthesis.onvoiceschanged = pickVoice;
+    document.querySelectorAll('.say').forEach(b => b.onclick = () => onSay(b));
+  } else {
+    document.documentElement.classList.add('no-speech');
+  }
   $('know').onclick = onKnow;
   $('dunno').onclick = onDunno;
   $('nextBtn').onclick = next;

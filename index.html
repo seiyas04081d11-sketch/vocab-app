@@ -96,12 +96,12 @@
     <div class="progress" id="lProg"></div>
     <div id="lCard" class="card">
       <div class="meta"><span id="lNo"></span><span class="tag" id="lTag">覚える</span></div>
-      <div class="word" id="lWord"></div>
+      <div class="say-row"><div class="word" id="lWord"></div><button class="say" data-say="lWord" aria-label="単語を読み上げる"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z" fill="currentColor"/><path d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button></div>
       <div class="cue" id="lCue"></div>
       <div class="pos" id="lPos"></div>
       <div class="meaning" id="lMeaning"></div>
       <div class="janote" id="lJaNote"></div>
-      <div class="ex" id="lEn"></div>
+      <div class="say-row ex-row"><div class="ex" id="lEn"></div><button class="say sm" data-say="lEn" aria-label="例文を読み上げる"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z" fill="currentColor"/><path d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button></div>
       <div class="ex ja" id="lJa"></div>
       <div class="note" id="lNote"></div>
       <div class="memo" id="lMemo"></div>
@@ -124,17 +124,17 @@
     <div class="progress" id="prog"></div>
     <div id="card" class="card">
       <div class="meta"><span id="cNo"></span><span id="cTag" class="tag"></span></div>
-      <div class="word" id="cWord"></div>
+      <div class="say-row"><div class="word" id="cWord"></div><button class="say" data-say="cWord" aria-label="単語を読み上げる"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z" fill="currentColor"/><path d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button></div>
       <div class="cue" id="cCue"></div>
       <div id="hints">
-        <div class="ex hint1" id="hEn" hidden></div>
+        <div class="say-row ex-row"><div class="ex hint1" id="hEn" hidden></div><button class="say sm" data-say="hEn" aria-label="例文を読み上げる"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z" fill="currentColor"/><path d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button></div>
         <div class="ex ja hint2" id="hJa" hidden></div>
       </div>
       <div id="answer" hidden>
         <div class="pos" id="aPos"></div>
         <div class="meaning" id="aMeaning"></div>
         <div class="janote" id="aJaNote"></div>
-        <div class="ex" id="aEn"></div>
+        <div class="say-row ex-row"><div class="ex" id="aEn"></div><button class="say sm" data-say="aEn" aria-label="例文を読み上げる"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z" fill="currentColor"/><path d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button></div>
         <div class="ex ja" id="aJa"></div>
         <div class="note" id="aNote"></div>
         <div class="memo" id="aMemo"></div>

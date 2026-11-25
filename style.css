@@ -142,6 +142,20 @@ input[type=number] {
 .ex.ja, .note { color:var(--muted); font-size:14px; }
 #hints .ex { border-left:3px solid var(--accent); padding-left:12px; }
 .note { margin-top:10px; }
+/* 読み上げボタン（スピーカー） */
+.say-row { display:flex; align-items:center; gap:12px; }
+.say-row > :first-child { flex:1; min-width:0; }
+.say-row.ex-row { align-items:flex-start; }
+.say {
+  flex:none; width:42px; height:42px; margin:0; padding:0; border:0; border-radius:50%;
+  display:inline-grid; place-items:center; background:var(--soft); color:var(--accent);
+}
+.say svg { width:21px; height:21px; }
+.say.sm { width:32px; height:32px; margin-top:4px; }
+.say.sm svg { width:16px; height:16px; }
+.say.on { background:var(--accent); color:var(--accent-fg); animation:sayPulse 1s ease-in-out infinite; }
+@keyframes sayPulse { 50% { transform:scale(1.08); } }
+:empty + .say, [hidden] + .say, .no-speech .say { display:none; }
 .janote { font-size:14px; background:var(--soft); border-radius:10px; padding:8px 12px; margin:-2px 0 12px; }
 .memo { margin-top:12px; font-size:14px; background:var(--bg); border:1px solid var(--line); border-radius:12px; padding:10px 12px; }
 .others { margin-top:12px; font-size:13px; color:var(--muted); border-top:1px dashed var(--line); padding-top:10px; }
