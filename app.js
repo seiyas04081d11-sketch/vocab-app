@@ -186,32 +186,97 @@ function setText(id, text) { $(id).textContent = text || ''; $(id).hidden = !tex
 
 // ================= 読み上げ =================
 // 端末に入っている音声合成（Web Speech API）で英語を読む。通信なし・無料。
+// 声と速さはこの端末だけに保存する（学習記録とは別）。
 const canSpeak = 'speechSynthesis' in window && 'SpeechSynthesisUtterance' in window;
+const KEY_VOICE = 'vocab.voice';   // { uri: 選んだ声, rate: 速さ }
+const DEFAULT_RATE = 0.95;
+const WORD_SLOWER = 0.9;           // 単語は例文より少しゆっくり
+const SAMPLE_TEXT = 'Hello. I will read your words and example sentences like this.';
+const REGION = { US: 'アメリカ', GB: 'イギリス', AU: 'オーストラリア', IE: 'アイルランド', NZ: 'ニュージーランド', IN: 'インド', ZA: '南アフリカ', SG: 'シンガポール' };
+// APIには性別の情報がないので、よくある声だけ名前から男女を表示する
+const FEMALE = /\b(Samantha|Ava|Zoe|Nicky|Allison|Susan|Karen|Moira|Tessa|Kate|Serena|Stephanie|Martha|Catherine|Fiona|Veena|Isha|Zira|Jenny|Aria|Hazel|Libby|Sonia|Natasha|Emma|Female|Google US English)\b/;
+const MALE = /\b(Fred|Aaron|Evan|Nathan|Tom|Alex|Daniel|Arthur|Oliver|Gordon|Lee|Rishi|Mark|David|Guy|Ryan|George|James|Noah|Malcolm|Male)\b/;
+// おもしろ声・古いロボット声は一覧に出さない
+const NOVELTY = /^(Albert|Bad News|Bahh|Bells|Boing|Bubbles|Cellos|Good News|Jester|Organ|Pipe Organ|Superstar|Trinoids|Whisper|Wobble|Zarvox|Deranged|Hysterical|Eddy|Flo|Grandma|Grandpa|Reed|Rocko|Sandy|Shelley|Junior|Ralph|Kathy|Princess|Vicki|Victoria|Agnes|Bruce)\b/;
+
+let enVoices = [];
 let enVoice = null;
+let voicePref = load(KEY_VOICE, {});
+
+function voiceRate() { return +voicePref.rate || DEFAULT_RATE; }
+function saveVoice(p) { voicePref = { ...voicePref, ...p }; save(KEY_VOICE, voicePref); }
+function regionOf(v) { return (v.lang.split(/[-_]/)[1] || '').toUpperCase(); }
+// 0: 標準 / 1: 拡張 / 2: プレミアム（iPhoneは voiceURI に compact / enhanced / premium が入る）
+function voiceQuality(v) {
+  const s = (v.voiceURI + ' ' + v.name).toLowerCase();
+  if (/premium|プレミアム/.test(s)) return 2;
+  if (/enhanced|拡張|natural|neural/.test(s)) return 1;
+  return 0;
+}
+function voiceLabel(v) {
+  const base = v.name.replace(/\s*\((Enhanced|Premium|拡張|プレミアム)\)/i, '');
+  const sex = FEMALE.test(v.name) ? '女性' : MALE.test(v.name) ? '男性' : '';
+  const tags = [sex, ['', '拡張', 'プレミアム'][voiceQuality(v)]].filter(Boolean);
+  return tags.length ? `${base}（${tags.join('・')}）` : base;
+}
+function rateText(r) { return `${(+r).toFixed(2)}倍`; }
 
 function pickVoice() {
-  const vs = speechSynthesis.getVoices().filter(v => /^en[-_]US/i.test(v.lang));
-  enVoice = vs.find(v => /Samantha|Google US English/.test(v.name)) || vs.find(v => v.localService) || vs[0] || null;
+  const seen = new Set();
+  enVoices = speechSynthesis.getVoices()
+    .filter(v => /^en[-_]/i.test(v.lang) && !NOVELTY.test(v.name))
+    .filter(v => !seen.has(v.voiceURI) && seen.add(v.voiceURI));
+  const us = enVoices.filter(v => regionOf(v) === 'US');
+  enVoice = enVoices.find(v => v.voiceURI === voicePref.uri)
+    || us.find(v => /Samantha|Google US English/.test(v.name)) || us.find(v => v.localService) || us[0] || enVoices[0] || null;
+  renderVoicePicker();
 }
+
+function renderVoicePicker() {
+  const sel = $('voiceSel');
+  sel.innerHTML = '';
+  const order = Object.keys(REGION);
+  const rank = k => order.includes(k) ? order.indexOf(k) : 99;
+  const groups = {};
+  for (const v of enVoices) (groups[regionOf(v)] ||= []).push(v);
+  for (const k of Object.keys(groups).sort((a, b) => rank(a) - rank(b))) {
+    const og = document.createElement('optgroup');
+    og.label = REGION[k] || 'その他の英語';
+    groups[k].sort((a, b) => voiceQuality(b) - voiceQuality(a) || a.name.localeCompare(b.name))
+      .forEach(v => og.appendChild(new Option(voiceLabel(v), v.voiceURI, false, v === enVoice)));
+    sel.appendChild(og);
+  }
+  if (!enVoices.length) sel.appendChild(new Option('英語の声が見つかりません', ''));
+  sel.disabled = !enVoices.length;
+  $('rate').value = voiceRate();
+  $('rateVal').textContent = rateText(voiceRate());
+}
+
 function stopSpeak() {
   if (!canSpeak) return;
   speechSynthesis.cancel();
-  document.querySelectorAll('.say.on').forEach(b => b.classList.remove('on'));
+  document.querySelectorAll('.say.on, #voiceTest.on').forEach(b => b.classList.remove('on'));
+}
+function speak(text, rate, btn) {
+  stopSpeak();
+  if (!canSpeak || !text) return;
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = enVoice ? enVoice.lang : 'en-US';
+  if (enVoice) u.voice = enVoice;
+  u.rate = rate;
+  if (btn) {
+    btn.classList.add('on');
+    u.onend = u.onerror = () => btn.classList.remove('on');
+  }
+  speechSynthesis.speak(u);
 }
 // ボタンの data-say に書いた要素の文字を読む。読んでいる途中でもう一度押すと止まる
 function onSay(btn) {
-  const text = $(btn.dataset.say).textContent.trim();
-  const wasOn = btn.classList.contains('on');
-  stopSpeak();
-  if (!text || wasOn) return;
-  const u = new SpeechSynthesisUtterance(text);
-  u.lang = 'en-US';
-  if (enVoice) u.voice = enVoice;
-  u.rate = btn.classList.contains('sm') ? 0.95 : 0.85;   // 単語は少しゆっくり
-  u.onend = u.onerror = () => btn.classList.remove('on');
-  btn.classList.add('on');
-  speechSynthesis.speak(u);
+  if (btn.classList.contains('on')) return stopSpeak();
+  const isWord = !btn.classList.contains('sm');
+  speak($(btn.dataset.say).textContent.trim(), isWord ? voiceRate() * WORD_SLOWER : voiceRate(), btn);
 }
+function speakSample() { speak(SAMPLE_TEXT, voiceRate(), $('voiceTest')); }
 
 // ================= STEP 1: 覚える =================
 // 答えを全部見せて覚える。「覚えた」を押した単語から演習に回る。
@@ -512,6 +577,14 @@ async function init() {
     pickVoice();
     speechSynthesis.onvoiceschanged = pickVoice;
     document.querySelectorAll('.say').forEach(b => b.onclick = () => onSay(b));
+    $('voiceSel').onchange = e => {
+      saveVoice({ uri: e.target.value });
+      enVoice = enVoices.find(v => v.voiceURI === e.target.value) || enVoice;
+      speakSample();
+    };
+    $('rate').oninput = e => { $('rateVal').textContent = rateText(e.target.value); };
+    $('rate').onchange = e => { saveVoice({ rate: +e.target.value }); speakSample(); };
+    $('voiceTest').onclick = () => $('voiceTest').classList.contains('on') ? stopSpeak() : speakSample();
   } else {
     document.documentElement.classList.add('no-speech');
   }

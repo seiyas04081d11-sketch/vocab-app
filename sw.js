@@ -1,4 +1,4 @@
-const CACHE = 'vocab-v8';
+const CACHE = 'vocab-v9';
 const FILES = ['./', './index.html', './theme.js', './style.css', './app.js', './manifest.json', './data/sample.csv'];
 
 self.addEventListener('install', e => {
